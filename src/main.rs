@@ -28,7 +28,7 @@ fn setup(mut commands: Commands ){
     commands.spawn((
     components::Name("square1".to_string()), 
     components::Player,
-    components::Velocity{x:10.0,y:10.0},
+    components::Velocity{x:100.0,y:100.0},
     SpriteBundle {
         sprite: Sprite {
             color: Color::rgb(0.25, 0.25, 0.75),
@@ -38,22 +38,50 @@ fn setup(mut commands: Commands ){
         ..default()
     })
   );
+  const REMAINDER_DIVIDER: u32 = 30;
+  let mut position : (f32,f32) = (0., 0.);
+  let block_batch: Vec<(components::Block, SpriteBundle)> = (0..120).map( 
+    |x: u32| {
+      match x{
+        0..=29 => position = (
+             1500. + 0.0 * ( (x % REMAINDER_DIVIDER) as f32), 
+             1500. - 100.0 * ( (x % REMAINDER_DIVIDER) as f32), 
+        ),
+        30..=59 => position = (
+             1500. - 100.0 * ( (x % REMAINDER_DIVIDER) as f32), 
+             -1500. + 0.0 * ( (x % REMAINDER_DIVIDER) as f32), 
+        ),
+        60..=89 => position = (
+             -1500. + 0.0 * ( (x % REMAINDER_DIVIDER) as f32), 
+             -1500. + 100.0 * ( (x % REMAINDER_DIVIDER) as f32), 
+        ),
+        90..=119 => position = (
+             -1500. + 100.0 * ( (x % REMAINDER_DIVIDER) as f32), 
+             1500. + 0.0 * ( (x % REMAINDER_DIVIDER) as f32), 
+        ),
+        _ => {}
+      }
 
-  
-  let block_batch: Vec<(components::Block, SpriteBundle)> = (0..100).map( |x| (
-    components::Block, 
-    SpriteBundle {
-    sprite: Sprite {
-      color: Color::rgb(1.,0.,0.2),
-      custom_size: Some(Vec2::new(100., 100.)),
-      ..default()
-    },
-    transform: Transform{
-      translation: Vec3 { x: 100., y: 100., ..default() },
-      ..default()
-    },
-    ..default()
-  })).collect();
+      (
+        components::Block, 
+        SpriteBundle {
+        sprite: Sprite {
+          color: Color::rgb(1.,0.,0.2),
+          custom_size: Some(Vec2::new(100., 100.)),
+          ..default()
+        },
+        transform: Transform{
+          translation: Vec3 { 
+            x: position.0,
+            y: position.1,
+            ..default() 
+          },
+          ..default()
+        },
+        ..default()
+      })
+    }
+).collect();
 
   commands.spawn_batch( block_batch);
 
