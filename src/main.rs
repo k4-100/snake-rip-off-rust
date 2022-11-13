@@ -1,11 +1,13 @@
 use bevy::{
   prelude::*, 
-  input::keyboard::*
+  input::keyboard::*,
+  window::*
 };
 
 
 mod components;
 
+pub const CLEAR: Color = Color::rgb(0.1, 0.1,0.1);
 
 
 // region: --- PlayerPlugin systems
@@ -16,7 +18,7 @@ fn setup(mut commands: Commands ){
     commands.spawn((
     components::Name("square1".to_string()), 
     components::Player,
-    components::Velocity{x:1.0,y:0.0},
+    components::Velocity{x:10.0,y:10.0},
     SpriteBundle {
         sprite: Sprite {
             color: Color::rgb(0.25, 0.25, 0.75),
@@ -30,13 +32,6 @@ fn setup(mut commands: Commands ){
 
 }
 
-// fn player_movement_system(mut query: Query<(&components::Velocity, &mut Transform), With<components::Player>>){
-//   for (velocity, mut transform) in query.iter_mut(){
-//     let translation = &mut transform.translation;
-//     translation.x += velocity.x;
-//     translation.y += velocity.y;
-//   }
-// }
 
 fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Velocity, &mut Transform), With<components::Player>>){
   use bevy::input::ButtonState;
@@ -50,10 +45,10 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
           match ev.key_code{
             Some(x) =>  match x{
 
-            KeyCode::A => {translation.x -= 10.0},
-            KeyCode::D => {translation.x += 10.0},
-            KeyCode::W => {translation.y += 10.0},
-            KeyCode::S => {translation.y -= 10.0},
+            KeyCode::A => {translation.x -= velocity.x},
+            KeyCode::D => {translation.x += velocity.x},
+            KeyCode::W => {translation.y += velocity.y},
+            KeyCode::S => {translation.y -= velocity.y},
             _ => {}
             },
             None => {}
@@ -76,16 +71,30 @@ impl Plugin for PlayerPlugin{
   fn build(&self, app: &mut App){
     app
     .add_startup_system(setup)
-    // .add_system(player_movement_system)
     .add_system(keyboard_input);
   }
 }
 
 
 
+
 fn main(){
   App::new()
-    .add_plugins(DefaultPlugins)
+    .insert_resource(ClearColor(CLEAR))
+    .add_plugins(DefaultPlugins.set(
+      WindowPlugin { 
+        window: WindowDescriptor{
+          title: "Snake rip-off".to_string(),
+          width: 1200.0,
+          height: 800.0,
+          resizable: false,
+          ..default()
+        }, 
+        add_primary_window: true,
+        exit_on_all_closed: true,
+        close_when_requested: true
+      }
+    ))
     .add_plugin(PlayerPlugin)
     .run();
 }
