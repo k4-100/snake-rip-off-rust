@@ -1,19 +1,32 @@
 use bevy::{
   prelude::*, 
-  input::keyboard::*,
-  window::*
+  input::keyboard::*
 };
 
 
 mod components;
 
+
+pub const SCREEN_WIDTH: f32 = 1200.0;
+pub const SCREEN_HEIGHT: f32 = 800.0;
+
 pub const CLEAR: Color = Color::rgb(0.1, 0.1,0.1);
+
+
 
 
 // region: --- PlayerPlugin systems
 
 fn setup(mut commands: Commands ){
-    commands.spawn(Camera2dBundle::default());
+
+
+    commands.spawn(Camera2dBundle{
+      transform: Transform{
+        scale: Vec3{x: 5.0, y: 5.0, z: 1.0},
+        ..default()
+      },
+      ..default()
+    });
     // Rectangle
     commands.spawn((
     components::Name("square1".to_string()), 
@@ -88,6 +101,7 @@ fn main(){
           width: 1200.0,
           height: 800.0,
           resizable: false,
+          // scale_factor_override: Some(1.0),
           ..default()
         }, 
         add_primary_window: true,
