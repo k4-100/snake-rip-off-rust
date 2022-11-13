@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct ShapeComponent;
+
+// region: --- Player Components 
+
 #[derive(Component)]
 pub struct Name(pub String);
 
@@ -13,3 +14,6 @@ pub struct Velocity{
 
 #[derive(Component)]
 pub struct Player;
+
+
+// endregion: --- Player Components
