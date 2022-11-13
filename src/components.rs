@@ -18,4 +18,9 @@ pub struct Player;
 #[derive(Component)]
 pub struct Block;
 
+#[derive(Component)]
+pub struct Head;
+
+#[derive(Component)]
+pub struct Body;
 // endregion: --- PlayerPlugin Components

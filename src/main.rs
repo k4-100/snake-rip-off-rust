@@ -24,11 +24,13 @@ fn setup(mut commands: Commands ){
       },
       ..default()
     });
-    // player
+
+    // player's head
     commands.spawn((
     components::Name("square1".to_string()), 
+    components::Head,
     components::Player,
-    components::Velocity{x:100.0,y:100.0},
+    components::Velocity{x:100.0, y:100.0},
     SpriteBundle {
         sprite: Sprite {
             color: Color::rgb(0.25, 0.25, 0.75),
@@ -36,8 +38,42 @@ fn setup(mut commands: Commands ){
             ..default()
         },
         ..default()
-    })
-  );
+    }));
+
+    let body_batch: Vec<(components::Player, components::Body,SpriteBundle)> = (1..=5).map( |x: u32|{
+      (
+        components::Player,
+        components::Body,
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::rgb(0.25, 0.95, 0.75),
+                custom_size: Some(Vec2::new(100.0, 100.0)),
+                ..default()
+            },
+            transform: Transform{
+              translation: Vec3 { 
+                x: 0.0,
+                y: 0.0 - (100.0 * x as f32),
+                ..default() 
+              },
+              ..default()
+            },
+            ..default()
+          }
+      )
+    }).collect();
+
+    // player's body
+    commands.spawn_batch( body_batch );
+
+    // commands.spawn_batch( 
+    //   (0..4).map( || {
+    //     (components::Block)
+    //   }).collect()
+    // );
+
+
+
   const REMAINDER_DIVIDER: u32 = 30;
   let mut position : (f32,f32) = (0., 0.);
   let block_batch: Vec<(components::Block, SpriteBundle)> = (0..120).map( 
@@ -83,6 +119,7 @@ fn setup(mut commands: Commands ){
     }
 ).collect();
 
+  //blocks
   commands.spawn_batch( block_batch);
 
 }
