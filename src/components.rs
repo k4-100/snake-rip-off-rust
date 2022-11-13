@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 
-// region: --- Player Components 
+// region: --- PlayerPlugin Components 
 
 #[derive(Component)]
 pub struct Name(pub String);
@@ -15,5 +15,7 @@ pub struct Velocity{
 #[derive(Component)]
 pub struct Player;
 
+#[derive(Component)]
+pub struct Block;
 
-// endregion: --- Player Components
+// endregion: --- PlayerPlugin Components

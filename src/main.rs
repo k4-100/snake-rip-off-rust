@@ -12,9 +12,6 @@ pub const SCREEN_HEIGHT: f32 = 800.0;
 
 pub const CLEAR: Color = Color::rgb(0.1, 0.1,0.1);
 
-
-
-
 // region: --- PlayerPlugin systems
 
 fn setup(mut commands: Commands ){
@@ -27,7 +24,7 @@ fn setup(mut commands: Commands ){
       },
       ..default()
     });
-    // Rectangle
+    // player
     commands.spawn((
     components::Name("square1".to_string()), 
     components::Player,
@@ -42,6 +39,23 @@ fn setup(mut commands: Commands ){
     })
   );
 
+  
+  let block_batch: Vec<(components::Block, SpriteBundle)> = (0..100).map( |x| (
+    components::Block, 
+    SpriteBundle {
+    sprite: Sprite {
+      color: Color::rgb(1.,0.,0.2),
+      custom_size: Some(Vec2::new(100., 100.)),
+      ..default()
+    },
+    transform: Transform{
+      translation: Vec3 { x: 100., y: 100., ..default() },
+      ..default()
+    },
+    ..default()
+  })).collect();
+
+  commands.spawn_batch( block_batch);
 
 }
 
