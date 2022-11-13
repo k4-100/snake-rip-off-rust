@@ -1,37 +1,27 @@
 use bevy::prelude::*;
 
+mod components;
 
-#[derive(Component)]
-struct ShapeComponent;
-#[derive(Component)]
-struct Name(String);
 
-#[derive(Component)]
-struct Velocity{
-  x: f32,
-  y: f32
-}
+pub struct PlayerPlugin;
 
-impl Velocity {
-  fn new(x:f32, y:f32) -> Velocity{
-    Velocity{
-      x,
-      y
-    }
+impl Plugin for PlayerPlugin{
+  fn build(&self, app: &mut App){
+    app
+    .add_startup_system(setup)
+    .add_system(player_movement_system);
   }
 }
 
-#[derive(Component)]
-struct Player;
-
+// region: --- PlayerPlugin systems
 
 fn setup(mut commands: Commands ){
     commands.spawn(Camera2dBundle::default());
     // Rectangle
     commands.spawn((
-    Name("square1".to_string()), 
-    Player,
-    Velocity::new(10.0,0.0),
+    components::Name("square1".to_string()), 
+    components::Player,
+    components::Velocity{x:1.0,y:0.0},
     SpriteBundle {
         sprite: Sprite {
             color: Color::rgb(0.25, 0.25, 0.75),
@@ -45,7 +35,7 @@ fn setup(mut commands: Commands ){
 
 }
 
-fn player_movement_system(mut query: Query<(&Velocity, &mut Transform), With<Player>>){
+fn player_movement_system(mut query: Query<(&components::Velocity, &mut Transform), With<components::Player>>){
   for (velocity, mut transform) in query.iter_mut(){
     let translation = &mut transform.translation;
     translation.x += velocity.x;
@@ -53,10 +43,14 @@ fn player_movement_system(mut query: Query<(&Velocity, &mut Transform), With<Pla
   }
 }
 
+
+
+// endregion: --- Common Components
+
+
 fn main(){
   App::new()
-    .add_startup_system( setup )
-    .add_system( player_movement_system )
     .add_plugins(DefaultPlugins)
+    .add_plugin(PlayerPlugin)
     .run();
 }
