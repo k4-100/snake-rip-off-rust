@@ -12,6 +12,7 @@ pub const SCREEN_WIDTH: f32 = 1200.0;
 pub const SCREEN_HEIGHT: f32 = 800.0;
 pub const CLEAR: Color = Color::rgb(0.1, 0.1,0.1);
 
+
 // region: --- PlayerPlugin systems
 
 fn setup(mut commands: Commands ){
@@ -126,43 +127,46 @@ fn setup(mut commands: Commands ){
 }
 
 
-
-
-// fn stuff( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player,  &mut Transform)>){
-
-//           println!("{}", query.iter().len());
-// }
-
-
-fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player, &Velocity,  &mut Transform)>){
+fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player, &Velocity,  &mut Transform)>, mut previous_position: ResMut<components::PreviousPosition>){
   use bevy::input::ButtonState;
-        // for( velocity, mut transform) in query.iter(){
-          println!("{}", query.iter().len());
-        // }
 
 
   for ev in key_evr.iter(){
     match ev.state{
       ButtonState::Pressed => {
         // println!("Key press: {:?} ({})",ev.key_code, ev.scan_code);
-        for( player, velocity, mut transform) in query.iter_mut(){
-          // if  components::Player::Head == *player{
+        let query_iter_mut = query.iter_mut();
+        for( player, velocity, mut transform) in query_iter_mut{
+          if  components::Player::Head == *player{  
+            *previous_position = components::PreviousPosition( transform.translation.clone() );
             let translation = &mut transform.translation;
             match ev.key_code{
               Some(x) =>  match x{
-
-              KeyCode::A => {translation.x -= velocity.x},
-              KeyCode::D => {translation.x += velocity.x},
-              KeyCode::W => {
-                translation.y += velocity.y;
+              KeyCode::A => {
+                translation.x -= velocity.x;
               },
-              KeyCode::S => {translation.y -= velocity.y},
+              KeyCode::D => {
+                translation.x += velocity.x
+              },
+              KeyCode::W => {
+                translation.y += velocity.y
+              },
+              KeyCode::S => {
+                translation.y -= velocity.y
+              },
               _ => {}
               },
               None => {}
             }
+            // println!("{:?}", previous_position);
+          }else{
+            let previous_position_copy = previous_position.0;
+            *previous_position = components::PreviousPosition( transform.translation.clone() );
+            let translation = &mut transform.translation;
+            *translation = previous_position_copy;
+
           }
-        // }
+        }
       }
       ButtonState::Released => {}
     }
@@ -180,6 +184,7 @@ impl Plugin for PlayerPlugin{
   fn build(&self, app: &mut App){
     app
     .add_startup_system(setup)
+    .insert_resource(components::PreviousPosition(Vec3 { x: 0., y: 0., ..default() }))
     .add_system(keyboard_input);
   }
 }
