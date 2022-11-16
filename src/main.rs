@@ -2,6 +2,7 @@ use bevy::{
   prelude::*, 
   input::keyboard::*
 };
+use components::Velocity;
 
 
 mod components;
@@ -9,7 +10,6 @@ mod components;
 
 pub const SCREEN_WIDTH: f32 = 1200.0;
 pub const SCREEN_HEIGHT: f32 = 800.0;
-
 pub const CLEAR: Color = Color::rgb(0.1, 0.1,0.1);
 
 // region: --- PlayerPlugin systems
@@ -26,27 +26,34 @@ fn setup(mut commands: Commands ){
     });
 
     // player's head
-    commands.spawn((
-    components::Name("square1".to_string()), 
-    components::Head,
-    components::Player,
-    components::Velocity{x:100.0, y:100.0},
-    SpriteBundle {
-        sprite: Sprite {
-            color: Color::rgb(0.25, 0.25, 0.75),
-            custom_size: Some(Vec2::new(100.0, 100.0)),
-            ..default()
-        },
-        ..default()
-    }));
+    // commands.spawn((
+    // components::Name("square1".to_string()), 
+    // components::Player::Head,
+    // components::Velocity{x:100.0, y:100.0},
+    // SpriteBundle {
+    //     sprite: Sprite {
+    //         color: Color::rgb(0.25, 0.25, 0.75),
+    //         custom_size: Some(Vec2::new(100.0, 100.0)),
+    //         ..default()
+    //     },
+    //     ..default()
+    // }));
 
-    let body_batch: Vec<(components::Player, components::Body,SpriteBundle)> = (1..=5).map( |x: u32|{
+    let body_batch: Vec<(components::Player, components::Velocity, SpriteBundle)> = (0..=5).map( |x: u32|{
+      println!("x: {}",x);
+
       (
-        components::Player,
-        components::Body,
+        if x == 0 { components::Player::Head } else { components::Player::Body } ,
+
+        components::Velocity{x: 100., y: 100.},
         SpriteBundle {
             sprite: Sprite {
-                color: Color::rgb(0.25, 0.95, 0.75),
+                color: Color::rgb(0.25, 0.95, 
+                
+                if x == 0 { 0.9 } else { 0.1} ,
+                
+                
+                ),
                 custom_size: Some(Vec2::new(100.0, 100.0)),
                 ..default()
             },
@@ -65,12 +72,6 @@ fn setup(mut commands: Commands ){
 
     // player's body
     commands.spawn_batch( body_batch );
-
-    // commands.spawn_batch( 
-    //   (0..4).map( || {
-    //     (components::Block)
-    //   }).collect()
-    // );
 
 
 
@@ -125,27 +126,43 @@ fn setup(mut commands: Commands ){
 }
 
 
-fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Velocity, &mut Transform), With<components::Player>>){
+
+
+// fn stuff( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player,  &mut Transform)>){
+
+//           println!("{}", query.iter().len());
+// }
+
+
+fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player, &Velocity,  &mut Transform)>){
   use bevy::input::ButtonState;
+        // for( velocity, mut transform) in query.iter(){
+          println!("{}", query.iter().len());
+        // }
+
 
   for ev in key_evr.iter(){
     match ev.state{
       ButtonState::Pressed => {
-        println!("Key press: {:?} ({})",ev.key_code, ev.scan_code);
-        for( velocity, mut transform) in query.iter_mut(){
-          let translation = &mut transform.translation;
-          match ev.key_code{
-            Some(x) =>  match x{
+        // println!("Key press: {:?} ({})",ev.key_code, ev.scan_code);
+        for( player, velocity, mut transform) in query.iter_mut(){
+          // if  components::Player::Head == *player{
+            let translation = &mut transform.translation;
+            match ev.key_code{
+              Some(x) =>  match x{
 
-            KeyCode::A => {translation.x -= velocity.x},
-            KeyCode::D => {translation.x += velocity.x},
-            KeyCode::W => {translation.y += velocity.y},
-            KeyCode::S => {translation.y -= velocity.y},
-            _ => {}
-            },
-            None => {}
+              KeyCode::A => {translation.x -= velocity.x},
+              KeyCode::D => {translation.x += velocity.x},
+              KeyCode::W => {
+                translation.y += velocity.y;
+              },
+              KeyCode::S => {translation.y -= velocity.y},
+              _ => {}
+              },
+              None => {}
+            }
           }
-        }
+        // }
       }
       ButtonState::Released => {}
     }

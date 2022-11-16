@@ -1,0 +1,54 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'breakout'",
+      "cargo": {
+        "args": ["build", "--example=breakout", "--package=bevy"],
+        "filter": {
+          "name": "breakout",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "CARGO_MANIFEST_DIR": "${workspaceFolder}"
+      }
+    },
+
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'lands'",
+      "cargo": {
+        "args": ["build", "--bin=lands", "--package=lands"],
+        "filter": {
+          "name": "lands",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'lands'",
+      "cargo": {
+        "args": ["test", "--no-run", "--bin=lands", "--package=lands"],
+        "filter": {
+          "name": "lands",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

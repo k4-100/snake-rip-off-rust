@@ -12,15 +12,18 @@ pub struct Velocity{
   pub y: f32
 }
 
-#[derive(Component)]
-pub struct Player;
+#[derive(Component, Eq, PartialEq, Debug)]
+pub enum Player{
+  Head,
+  Body
+}
 
 #[derive(Component)]
 pub struct Block;
 
-#[derive(Component)]
-pub struct Head;
+// #[derive(Component)]
+// pub struct Head;
 
-#[derive(Component)]
-pub struct Body;
+// #[derive(Component)]
+// pub struct Body;
 // endregion: --- PlayerPlugin Components
