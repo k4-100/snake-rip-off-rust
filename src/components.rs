@@ -21,11 +21,4 @@ pub enum Player{
 #[derive(Component)]
 pub struct Block;
 
-#[derive(Resource, Debug)]
-pub struct PreviousPosition(pub Vec3);
-// #[derive(Component)]
-// pub struct Head;
-
-// #[derive(Component)]
-// pub struct Body;
 // endregion: --- PlayerPlugin Components

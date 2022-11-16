@@ -2,10 +2,10 @@ use bevy::{
   prelude::*, 
   input::keyboard::*
 };
-use components::Velocity;
 
 
 mod components;
+mod resources;
 
 
 pub const SCREEN_WIDTH: f32 = 1200.0;
@@ -49,11 +49,10 @@ fn setup(mut commands: Commands ){
         components::Velocity{x: 100., y: 100.},
         SpriteBundle {
             sprite: Sprite {
-                color: Color::rgb(0.25, 0.95, 
-                
+                color: Color::rgb(
+                0.25,
+                0.95, 
                 if x == 0 { 0.9 } else { 0.1} ,
-                
-                
                 ),
                 custom_size: Some(Vec2::new(100.0, 100.0)),
                 ..default()
@@ -127,7 +126,7 @@ fn setup(mut commands: Commands ){
 }
 
 
-fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player, &Velocity,  &mut Transform)>, mut previous_position: ResMut<components::PreviousPosition>){
+fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player, &components::Velocity,  &mut Transform)>, mut previous_position: ResMut<resources::PreviousPosition>){
   use bevy::input::ButtonState;
 
 
@@ -138,7 +137,7 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
         let query_iter_mut = query.iter_mut();
         for( player, velocity, mut transform) in query_iter_mut{
           if  components::Player::Head == *player{  
-            *previous_position = components::PreviousPosition( transform.translation.clone() );
+            *previous_position = resources::PreviousPosition( transform.translation.clone() );
             let translation = &mut transform.translation;
             match ev.key_code{
               Some(x) =>  match x{
@@ -161,7 +160,7 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
             // println!("{:?}", previous_position);
           }else{
             let previous_position_copy = previous_position.0;
-            *previous_position = components::PreviousPosition( transform.translation.clone() );
+            *previous_position = resources::PreviousPosition( transform.translation.clone() );
             let translation = &mut transform.translation;
             *translation = previous_position_copy;
 
@@ -184,7 +183,7 @@ impl Plugin for PlayerPlugin{
   fn build(&self, app: &mut App){
     app
     .add_startup_system(setup)
-    .insert_resource(components::PreviousPosition(Vec3 { x: 0., y: 0., ..default() }))
+    .insert_resource(resources::PreviousPosition(Vec3 { x: 0., y: 0., ..default() }))
     .add_system(keyboard_input);
   }
 }
