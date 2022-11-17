@@ -3,6 +3,8 @@ use bevy::{
   input::keyboard::*
 };
 
+use crate::components::HitBox;
+
 
 mod components;
 mod resources;
@@ -40,12 +42,15 @@ fn setup(mut commands: Commands ){
     //     ..default()
     // }));
 
-    let body_batch: Vec<(components::Player, components::Velocity, SpriteBundle)> = (0..=5).map( |x: u32|{
+    let body_batch: Vec<(components::Player, components::HitBox, components::Velocity, SpriteBundle)> = (0..=5).map( |x: u32|{
       println!("x: {}",x);
 
       (
         if x == 0 { components::Player::Head } else { components::Player::Body } ,
-
+        components::HitBox{ 
+          bottom_left: Vec2{x: -50., y: -50.}, 
+          top_right: Vec2{x:50.,y:50.} 
+        },
         components::Velocity{x: 100., y: 100.},
         SpriteBundle {
             sprite: Sprite {
@@ -174,6 +179,13 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
 
 }
 
+pub fn check_intersection( player_query: Query<(&components::Player, &components::HitBox)>, block_query: Query<(&components::Block, &Transform)> ){
+  println!("pq: {}", player_query.iter().len());
+  println!("bq: {}", block_query.iter().len());
+
+}
+
+
 // endregion: --- PlayerPlugin systems
 
 
@@ -184,7 +196,9 @@ impl Plugin for PlayerPlugin{
     app
     .add_startup_system(setup)
     .insert_resource(resources::PreviousPosition(Vec3 { x: 0., y: 0., ..default() }))
-    .add_system(keyboard_input);
+    .add_system(keyboard_input)
+    .add_system(check_intersection)
+    ;
   }
 }
 
