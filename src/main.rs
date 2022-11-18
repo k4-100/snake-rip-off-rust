@@ -28,29 +28,24 @@ fn setup(mut commands: Commands ){
       ..default()
     });
 
-    // player's head
-    // commands.spawn((
-    // components::Name("square1".to_string()), 
-    // components::Player::Head,
-    // components::Velocity{x:100.0, y:100.0},
-    // SpriteBundle {
-    //     sprite: Sprite {
-    //         color: Color::rgb(0.25, 0.25, 0.75),
-    //         custom_size: Some(Vec2::new(100.0, 100.0)),
-    //         ..default()
-    //     },
-    //     ..default()
-    // }));
-
     let body_batch: Vec<(components::Player, components::HitBox, components::Velocity, SpriteBundle)> = (0..=5).map( |x: u32|{
       println!("x: {}",x);
+      let size = Vec2::new(100.,100.);
+      let translation = Vec3{
+        x:0.,
+        y:0. - (100. * x as f32),
+        ..default()
+      };
 
       (
         if x == 0 { components::Player::Head } else { components::Player::Body } ,
-        components::HitBox{ 
-          bottom_left: Vec2{x: -50., y: -50.}, 
-          top_right: Vec2{x:50.,y:50.} 
-        },
+        // components::HitBox{ 
+        //   bottom_left: Vec2{x: -50., y: -50.}, 
+        //   top_right: Vec2{x:50.,y:50.},
+        //   width: size.x,
+        //   height: size.y,
+        // },
+        components::HitBox::from_translation(size.x, size.y, &translation),
         components::Velocity{x: 100., y: 100.},
         SpriteBundle {
             sprite: Sprite {
@@ -59,15 +54,11 @@ fn setup(mut commands: Commands ){
                 0.95, 
                 if x == 0 { 0.9 } else { 0.1} ,
                 ),
-                custom_size: Some(Vec2::new(100.0, 100.0)),
+                custom_size: Some(size),
                 ..default()
             },
             transform: Transform{
-              translation: Vec3 { 
-                x: 0.0,
-                y: 0.0 - (100.0 * x as f32),
-                ..default() 
-              },
+              translation,
               ..default()
             },
             ..default()
@@ -82,7 +73,7 @@ fn setup(mut commands: Commands ){
 
   const REMAINDER_DIVIDER: u32 = 30;
   let mut position : (f32,f32) = (0., 0.);
-  let block_batch: Vec<(components::Block, SpriteBundle)> = (0..120).map( 
+  let block_batch: Vec<(components::Block, components::HitBox,  SpriteBundle)> = (0..120).map( 
     |x: u32| {
       match x{
         0..=29 => position = (
@@ -106,6 +97,7 @@ fn setup(mut commands: Commands ){
 
       (
         components::Block, 
+        components::HitBox::from_translation(100., 100., &Vec3 { x: position.0, y: position.1, ..default() }),
         SpriteBundle {
         sprite: Sprite {
           color: Color::rgb(1.,0.,0.2),
@@ -179,9 +171,15 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
 
 }
 
-pub fn check_intersection( player_query: Query<(&components::Player, &components::HitBox)>, block_query: Query<(&components::Block, &Transform)> ){
-  println!("pq: {}", player_query.iter().len());
-  println!("bq: {}", block_query.iter().len());
+pub fn check_intersection( player_query: Query<(&components::Player, &components::HitBox)>, block_query: Query<(&components::Block, &components::HitBox)> ){
+  // println!("pq: {}", player_query.iter().len());
+  for (player, hitbox) in player_query.iter(){
+    // println!("pq: {:?} hbx: {:?} ", player, hitbox );
+  }
+
+  for (block, hitbox) in block_query.iter(){
+    println!("pq: {:?} hbx: {:?} ", block, hitbox );
+  }
 
 }
 
