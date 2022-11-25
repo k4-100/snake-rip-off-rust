@@ -3,8 +3,6 @@ use bevy::{
   input::keyboard::*
 };
 
-use crate::components::HitBox;
-
 
 mod components;
 mod resources;
@@ -123,7 +121,7 @@ fn setup(mut commands: Commands ){
 }
 
 
-fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player, &components::Velocity,  &mut Transform)>, mut previous_position: ResMut<resources::PreviousPosition>){
+fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player, &components::Velocity, &mut components::HitBox, &mut Transform)>, mut previous_position: ResMut<resources::PreviousPosition>){
   use bevy::input::ButtonState;
 
 
@@ -132,7 +130,7 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
       ButtonState::Pressed => {
         // println!("Key press: {:?} ({})",ev.key_code, ev.scan_code);
         let query_iter_mut = query.iter_mut();
-        for( player, velocity, mut transform) in query_iter_mut{
+        for( player, velocity, mut hitbox, mut transform) in query_iter_mut{
           if  components::Player::Head == *player{  
             *previous_position = resources::PreviousPosition( transform.translation.clone() );
             let translation = &mut transform.translation;
@@ -140,15 +138,22 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
               Some(x) =>  match x{
               KeyCode::A => {
                 translation.x -= velocity.x;
+                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
               },
               KeyCode::D => {
-                translation.x += velocity.x
+                translation.x += velocity.x;
+                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
+                // hitbox = HitBox::from_translation(hitbox.width, hitbox.height, translation);
               },
               KeyCode::W => {
-                translation.y += velocity.y
+                translation.y += velocity.y;
+                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
+                // hitbox = HitBox::from_translation(hitbox.width, hitbox.height, translation);
               },
               KeyCode::S => {
-                translation.y -= velocity.y
+                translation.y -= velocity.y;
+                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
+                // hitbox = HitBox::from_translation(hitbox.width, hitbox.height, translation);
               },
               _ => {}
               },
@@ -161,6 +166,8 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
             let translation = &mut transform.translation;
             *translation = previous_position_copy;
 
+
+
           }
         }
       }
@@ -170,17 +177,26 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
   
 
 }
-
-pub fn check_intersection( player_query: Query<(&components::Player, &components::HitBox)>, block_query: Query<(&components::Block, &components::HitBox)> ){
+pub fn check_intersection( player_query: Query<(&components::Player, &components::HitBox)>, block_query: Query<(&components::Block, &Transform)> ){
   // println!("pq: {}", player_query.iter().len());
-  for (player, hitbox) in player_query.iter(){
+  // for (player, hitbox) in player_query.iter(){
     // println!("pq: {:?} hbx: {:?} ", player, hitbox );
-  }
+  // }
 
-  for (block, hitbox) in block_query.iter(){
-    println!("pq: {:?} hbx: {:?} ", block, hitbox );
-  }
+  // for (block, hitbox) in block_query.iter(){
+  //   println!("pq: {:?} hbx: {:?} ", block, hitbox );
+  // }
 
+
+  for (player, hitbox_player) in player_query.iter(){
+    if *player == components::Player::Head{
+      for (block, transform) in block_query.iter(){
+        if hitbox_player.intersects_point(&transform.translation){
+          println!("intersects_point {:?}", transform.translation );
+        }
+      }
+    }
+  }
 }
 
 

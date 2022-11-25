@@ -30,9 +30,10 @@ pub struct HitBox{
 }
 
 impl HitBox{
-  // pub fn intersects( hitbox: Vec2 ) -> bool{
-  //   return false;
-  // }
+  pub fn intersects_point(&self, other: &Vec3 ) -> bool{
+    return (self.bottom_left.y < other.y && self.bottom_left.x  < other.x) &&
+    (self.top_right.y > other.y && self.top_right.x  > other.x);
+  }
 
   pub fn from_translation(width:f32, height:f32, translation: &Vec3 ) -> HitBox{
     let x = translation.x;
