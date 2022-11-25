@@ -37,12 +37,6 @@ fn setup(mut commands: Commands ){
 
       (
         if x == 0 { components::Player::Head } else { components::Player::Body } ,
-        // components::HitBox{ 
-        //   bottom_left: Vec2{x: -50., y: -50.}, 
-        //   top_right: Vec2{x:50.,y:50.},
-        //   width: size.x,
-        //   height: size.y,
-        // },
         components::HitBox::from_translation(size.x, size.y, &translation),
         components::Velocity{x: 100., y: 100.},
         SpriteBundle {
@@ -133,33 +127,21 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
         for( player, velocity, mut hitbox, mut transform) in query_iter_mut{
           if  components::Player::Head == *player{  
             *previous_position = resources::PreviousPosition( transform.translation.clone() );
+            let prev_translation= transform.translation.clone();
             let translation = &mut transform.translation;
             match ev.key_code{
               Some(x) =>  match x{
-              KeyCode::A => {
-                translation.x -= velocity.x;
-                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
-              },
-              KeyCode::D => {
-                translation.x += velocity.x;
-                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
-                // hitbox = HitBox::from_translation(hitbox.width, hitbox.height, translation);
-              },
-              KeyCode::W => {
-                translation.y += velocity.y;
-                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
-                // hitbox = HitBox::from_translation(hitbox.width, hitbox.height, translation);
-              },
-              KeyCode::S => {
-                translation.y -= velocity.y;
-                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
-                // hitbox = HitBox::from_translation(hitbox.width, hitbox.height, translation);
-              },
-              _ => {}
+                KeyCode::A => translation.x -= velocity.x,
+                KeyCode::D => translation.x += velocity.x,
+                KeyCode::W => translation.y += velocity.y,
+                KeyCode::S => translation.y -= velocity.y,
+                _ => {}
               },
               None => {}
             }
-            // println!("{:?}", previous_position);
+            if prev_translation != translation.clone() {
+                *hitbox = components::HitBox::from_translation(100., 100.,  &Vec3 { x: translation.x, y: translation.y, z: translation.z });
+            }
           }else{
             let previous_position_copy = previous_position.0;
             *previous_position = resources::PreviousPosition( transform.translation.clone() );
@@ -178,19 +160,9 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
 
 }
 pub fn check_intersection( player_query: Query<(&components::Player, &components::HitBox)>, block_query: Query<(&components::Block, &Transform)> ){
-  // println!("pq: {}", player_query.iter().len());
-  // for (player, hitbox) in player_query.iter(){
-    // println!("pq: {:?} hbx: {:?} ", player, hitbox );
-  // }
-
-  // for (block, hitbox) in block_query.iter(){
-  //   println!("pq: {:?} hbx: {:?} ", block, hitbox );
-  // }
-
-
   for (player, hitbox_player) in player_query.iter(){
     if *player == components::Player::Head{
-      for (block, transform) in block_query.iter(){
+      for (_, transform) in block_query.iter(){
         if hitbox_player.intersects_point(&transform.translation){
           println!("intersects_point {:?}", transform.translation );
         }
