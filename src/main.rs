@@ -26,7 +26,7 @@ fn setup(mut commands: Commands ){
 
     let body_batch: Vec<(components::Player, components::HitBox, components::Velocity, SpriteBundle)> = (0..=5).map( |x: u32|{
       println!("x: {}",x);
-      let size = Vec2::new(100.,100.);
+      let size = Vec2::new(95.,95.);
       let translation = Vec3{
         x:0.,
         y:0. - (100. * x as f32),
@@ -91,7 +91,7 @@ fn setup(mut commands: Commands ){
         SpriteBundle {
         sprite: Sprite {
           color: Color::rgb(1.,0.,0.2),
-          custom_size: Some(Vec2::new(100., 100.)),
+          custom_size: Some(Vec2::new(90., 90.)),
           ..default()
         },
         transform: Transform{
@@ -112,9 +112,33 @@ fn setup(mut commands: Commands ){
 
   
 
-  let food_batch: Vec<(components::Food, SpriteBundle)> = (0..=1).map(
-    |_| {
-      (
+  // let food_batch: Vec<(components::Food, SpriteBundle)> = (0..=1).map(
+  //   |_| {
+  //     (
+  //       components::Food, 
+  //       SpriteBundle {
+  //         sprite: Sprite {
+  //           color: Color::rgb(1.,0.5,0.0),
+  //           custom_size: Some(Vec2::new(100., 100.)),
+  //           ..default()
+  //         },
+  //         transform: Transform{
+  //           translation: Vec3 { 
+  //             x: 400.,
+  //             y: 400.,
+  //             ..default() 
+  //           },
+  //           ..default()
+  //         },
+  //         ..default()
+  //       }
+  //     )
+  //   }
+  // ).collect();
+
+  // food batch
+  commands.spawn(
+    (
         components::Food, 
         SpriteBundle {
           sprite: Sprite {
@@ -132,11 +156,11 @@ fn setup(mut commands: Commands ){
           },
           ..default()
         }
-      )
-    }
-  ).collect();
+    )
+    );
 
-  commands.spawn_batch( food_batch);
+    // commands.re
+    
 
 }
 
@@ -202,7 +226,7 @@ fn push_body_part( commands: &mut Commands, last_body_part_translation: &Vec3, p
               0.95, 
               0.1 ,
               ),
-              custom_size: Some(Vec2{x: 100., y:100.}),
+              custom_size: Some(Vec2{x: 90., y:90.}),
               ..default()
           },
           transform: Transform{
@@ -226,28 +250,36 @@ pub fn check_intersection(
     if *player_type == components::Player::Head{
 
       // food collision
-      for (_, transform) in food_query.iter(){
-        if hitbox_player.intersects_point(&transform.translation){
-          println!("intersects_food {:?}", transform.translation );
+      for food in food_query.iter(){
+
+        if hitbox_player.intersects_point(&food.1.translation){
+
+          println!("intersects_food {:?}", food.1.translation );
+
           match player_query.iter().last(){
             Some(last_body_part) =>{
               let last_body_part_translation = &last_body_part.2.translation;
               if player_transform.translation.y > last_body_part_translation.y {
                 println!("PUSH DOWN");
-                push_body_part( &mut commands, last_body_part_translation, Vec3{x:0., y:-100., ..default()})
+                push_body_part( &mut commands, last_body_part_translation, Vec3{x:0., y:-100., ..default()});
+                return;
               }
-              else if player_transform.translation.y < last_body_part_translation.y {
+              if player_transform.translation.y < last_body_part_translation.y {
                 println!("PUSH UP");
-                push_body_part( &mut commands, last_body_part_translation, Vec3{x:0., y:100., ..default()})
+                push_body_part( &mut commands, last_body_part_translation, Vec3{x:0., y:100., ..default()});
+                return;
               }
-              else if player_transform.translation.x > last_body_part_translation.x {
+              if player_transform.translation.x > last_body_part_translation.x {
                 println!("PUSH LEFT");
-                push_body_part( &mut commands, last_body_part_translation, Vec3{x:-100., y:0., ..default()})
+                push_body_part( &mut commands, last_body_part_translation, Vec3{x:-100., y:0., ..default()});
+                return;
               }
-              else if player_transform.translation.x < last_body_part_translation.x {
+              if player_transform.translation.x < last_body_part_translation.x {
                 println!("PUSH RIGHT");
-                push_body_part( &mut commands, last_body_part_translation, Vec3{x:100., y:0., ..default()})
+                push_body_part( &mut commands, last_body_part_translation, Vec3{x:100., y:0., ..default()});
               }
+              
+              
             },
             None => panic!("ERROR: No final item")
           }
