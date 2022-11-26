@@ -16,8 +16,6 @@ pub const CLEAR: Color = Color::rgb(0.1, 0.1,0.1);
 // region: --- PlayerPlugin systems
 
 fn setup(mut commands: Commands ){
-
-
     commands.spawn(Camera2dBundle{
       transform: Transform{
         scale: Vec3{x: 5.0, y: 5.0, z: 1.0},
@@ -112,6 +110,34 @@ fn setup(mut commands: Commands ){
   //blocks
   commands.spawn_batch( block_batch);
 
+  
+
+  let food_batch: Vec<(components::Food, SpriteBundle)> = (0..=1).map(
+    |_| {
+      (
+        components::Food, 
+        SpriteBundle {
+          sprite: Sprite {
+            color: Color::rgb(1.,0.5,0.0),
+            custom_size: Some(Vec2::new(100., 100.)),
+            ..default()
+          },
+          transform: Transform{
+            translation: Vec3 { 
+              x: 400.,
+              y: 400.,
+              ..default() 
+            },
+            ..default()
+          },
+          ..default()
+        }
+      )
+    }
+  ).collect();
+
+  commands.spawn_batch( food_batch);
+
 }
 
 
@@ -122,7 +148,6 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
   for ev in key_evr.iter(){
     match ev.state{
       ButtonState::Pressed => {
-        // println!("Key press: {:?} ({})",ev.key_code, ev.scan_code);
         let query_iter_mut = query.iter_mut();
         for( player, velocity, mut hitbox, mut transform) in query_iter_mut{
           if  components::Player::Head == *player{  
@@ -159,6 +184,7 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
   
 
 }
+
 pub fn check_intersection( player_query: Query<(&components::Player, &components::HitBox)>, block_query: Query<(&components::Block, &Transform)> ){
   for (player, hitbox_player) in player_query.iter(){
     if *player == components::Player::Head{

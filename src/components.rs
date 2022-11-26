@@ -21,6 +21,11 @@ pub enum Player{
 #[derive(Component, Debug)]
 pub struct Block;
 
+
+#[derive(Component, Debug)]
+pub struct Food;
+
+
 #[derive(Component, Debug)]
 pub struct HitBox{
   pub bottom_left: Vec2,
