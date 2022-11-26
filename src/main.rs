@@ -63,7 +63,7 @@ fn setup(mut commands: Commands ){
 
   const REMAINDER_DIVIDER: u32 = 30;
   let mut position : (f32,f32) = (0., 0.);
-  let block_batch: Vec<(components::Block, components::HitBox,  SpriteBundle)> = (0..120).map( 
+  let block_batch: Vec<(components::Block, components::HitBox, SpriteBundle)> = (0..120).map( 
     |x: u32| {
       match x{
         0..=29 => position = (
@@ -141,7 +141,10 @@ fn setup(mut commands: Commands ){
 }
 
 
-fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&components::Player, &components::Velocity, &mut components::HitBox, &mut Transform)>, mut previous_position: ResMut<resources::PreviousPosition>){
+fn keyboard_input( 
+  mut key_evr: EventReader<KeyboardInput>, 
+  mut query: Query<(&components::Player, &components::Velocity, &mut components::HitBox, &mut Transform)>, mut previous_position: ResMut<resources::PreviousPosition>
+){
   use bevy::input::ButtonState;
 
 
@@ -185,12 +188,75 @@ fn keyboard_input( mut key_evr: EventReader<KeyboardInput>, mut query: Query<(&c
 
 }
 
-pub fn check_intersection( player_query: Query<(&components::Player, &components::HitBox)>, block_query: Query<(&components::Block, &Transform)> ){
-  for (player, hitbox_player) in player_query.iter(){
-    if *player == components::Player::Head{
+
+fn push_body_part( commands: &mut Commands, last_body_part_translation: &Vec3, push_direction: Vec3 ){
+  commands.spawn(
+  ( 
+      components::Player::Body,
+      components::HitBox::from_translation(100., 100., &Vec3{x: 0., y: 0., ..default()}),
+      components::Velocity{x: 100., y: 100.},
+      SpriteBundle {
+          sprite: Sprite {
+              color: Color::rgb(
+              0.25,
+              0.95, 
+              0.1 ,
+              ),
+              custom_size: Some(Vec2{x: 100., y:100.}),
+              ..default()
+          },
+          transform: Transform{
+            // translation: Vec3{x:0., y:0., z: 0.1},
+            translation: *last_body_part_translation + push_direction,
+            ..default()
+          },
+          ..default()
+        }
+    )
+);
+}
+
+pub fn check_intersection( 
+  player_query: Query<(&components::Player, &components::HitBox, &Transform)>, 
+  block_query: Query<(&components::Block, &Transform)>, 
+  food_query: Query<(&components::Food, &Transform)>,
+  mut commands: Commands
+){
+  for (player_type, hitbox_player, player_transform) in player_query.iter(){
+    if *player_type == components::Player::Head{
+
+      // food collision
+      for (_, transform) in food_query.iter(){
+        if hitbox_player.intersects_point(&transform.translation){
+          println!("intersects_food {:?}", transform.translation );
+          match player_query.iter().last(){
+            Some(last_body_part) =>{
+              let last_body_part_translation = &last_body_part.2.translation;
+              if player_transform.translation.y > last_body_part_translation.y {
+                println!("PUSH DOWN");
+                push_body_part( &mut commands, last_body_part_translation, Vec3{x:0., y:-100., ..default()})
+              }
+              else if player_transform.translation.y < last_body_part_translation.y {
+                println!("PUSH UP");
+                push_body_part( &mut commands, last_body_part_translation, Vec3{x:0., y:100., ..default()})
+              }
+              else if player_transform.translation.x > last_body_part_translation.x {
+                println!("PUSH LEFT");
+                push_body_part( &mut commands, last_body_part_translation, Vec3{x:-100., y:0., ..default()})
+              }
+              else if player_transform.translation.x < last_body_part_translation.x {
+                println!("PUSH RIGHT");
+                push_body_part( &mut commands, last_body_part_translation, Vec3{x:100., y:0., ..default()})
+              }
+            },
+            None => panic!("ERROR: No final item")
+          }
+        }
+      }
+      // block collision
       for (_, transform) in block_query.iter(){
         if hitbox_player.intersects_point(&transform.translation){
-          println!("intersects_point {:?}", transform.translation );
+          println!("intersects_block {:?}", transform.translation );
         }
       }
     }
