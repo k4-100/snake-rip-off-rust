@@ -12,7 +12,7 @@ pub struct Velocity{
   pub y: f32
 }
 
-#[derive(Component, Eq, PartialEq, Debug)]
+#[derive(Component, Eq, PartialEq, Debug, Clone, Copy)]
 pub enum Player{
   Head,
   Body
@@ -26,7 +26,7 @@ pub struct Block;
 pub struct Food;
 
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Clone, Copy)]
 pub struct HitBox{
   pub bottom_left: Vec2,
   pub top_right: Vec2,
