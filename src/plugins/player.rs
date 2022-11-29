@@ -20,6 +20,7 @@ impl Plugin for PlayerPlugin{
     app
     .add_startup_system(setup)
     .insert_resource(resources::PreviousPosition(Vec3 { x: 0., y: 0., ..default() }))
+    .insert_resource(resources::Score(0))
     .add_system(keyboard_input)
     .add_system(check_intersection)
     ;
@@ -157,10 +158,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
     commands.spawn(
       (
         TextBundle::from_section(
-          "Hello guys!", 
+          "Score: 0", 
           TextStyle { 
-            font: asset_server.load("Ubuntu-M.ttf"), 
-            font_size: 100., 
+            font: asset_server.load("fonts/Ubuntu-M.ttf"), 
+            font_size: 50., 
             color: Color::WHITE 
           }
         )
@@ -168,8 +169,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
         .with_style(Style {
             position_type: PositionType::Absolute,
             position: UiRect {
-                bottom: Val::Px(5.0),
-                right: Val::Px(15.0),
+                top: Val::Px(20.0),
+                left: Val::Px(290.0),
                 ..default()
             },
             ..default()
@@ -278,6 +279,8 @@ pub fn check_intersection(
     Commands,
     Query<(&components::Block, &Transform)>, 
   )>,
+  mut text_query: Query<&mut Text>,
+  mut score: ResMut<resources::Score>
 
 ){
 
@@ -346,6 +349,9 @@ pub fn check_intersection(
                 }
 
                 food.translation = get_random_food_position();
+                score.0 += 1;
+                let mut text = text_query.single_mut();
+                text.sections[0].value = format!("Score: {}", score.0);
               },
               None =>{}
             }
