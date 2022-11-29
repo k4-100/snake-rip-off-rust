@@ -21,8 +21,10 @@ impl Plugin for PlayerPlugin{
     .add_startup_system(setup)
     .insert_resource(resources::PreviousPosition(Vec3 { x: 0., y: 0., ..default() }))
     .insert_resource(resources::Score(0))
+    .insert_resource(resources::NeedRestart(false))
     .add_system(keyboard_input)
     .add_system(check_intersection)
+    .add_system(restart)
     ;
   }
 }
@@ -44,7 +46,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
       ..default()
     });
 
-    let body_batch: Vec<(components::Player, components::HitBox, components::Velocity, SpriteBundle)> = (0..=5).map( |x: u32|{
+    (0..=5).for_each( |x: u32| {
       println!("x: {}",x);
       let size = Vec2::new(95.,95.);
       let translation = Vec3{
@@ -53,7 +55,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
         ..default()
       };
 
-      (
+      commands.spawn(
+      ( 
         if x == 0 { components::Player::Head } else { components::Player::Body } ,
         components::HitBox::from_translation(size.x, size.y, &translation),
         components::Velocity{x: 100., y: 100.},
@@ -73,11 +76,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
             },
             ..default()
           }
-      )
-    }).collect();
+        )
+      );
+
+
+      });
+
 
     // player's body
-    commands.spawn_batch( body_batch );
+    // commands.spawn_batch( body_batch );
 
 
 
@@ -130,7 +137,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>){
   //blocks
   commands.spawn_batch( block_batch);
 
-  
 
   // food entity
   commands.spawn(
@@ -280,7 +286,8 @@ pub fn check_intersection(
     Query<(&components::Block, &Transform)>, 
   )>,
   mut text_query: Query<&mut Text>,
-  mut score: ResMut<resources::Score>
+  mut score: ResMut<resources::Score>,
+  mut need_restart: ResMut<resources::NeedRestart>
 
 ){
 
@@ -377,14 +384,85 @@ pub fn check_intersection(
     }
 
     // block collision
-    // for (_, transform) in block_query.iter(){
-    //   // if hitbox_player.intersects_point(&transform.translation){
-    //   //   println!("intersects_block {:?}", transform.translation );
-    //   // }
-    // }
+    for (_, transform) in set.p3().iter(){
+      match player{
+        Some(pl) =>{
+          if pl.1.intersects_point(&transform.translation){
+            println!("intersects_block {:?}", transform.translation );
+            need_restart.0 = true;
+          }
+        },
+        None =>{}
+      }
+    }
 
 
 }
+
+fn restart( 
+  mut commands: Commands,
+  mut need_restart: ResMut<resources::NeedRestart>,
+  mut score: ResMut<resources::Score>,
+  mut set: ParamSet<(
+    Query<(Entity, &components::Player, &components::HitBox, &Transform)>, 
+    Query<&mut Text>,
+  )>,
+  // mut score: ResMut<resources::Score>  
+){
+  // println!("NEEEDS RESTART? {}", need_restart.0);
+  if need_restart.0{
+    for player_body_part in set.p0().iter_mut(){
+      println!("RUNSDA");
+      commands.entity(player_body_part.0).despawn();
+    }
+
+
+    (0..=5).for_each( |x: u32| {
+      println!("x: {}",x);
+      let size = Vec2::new(95.,95.);
+      let translation = Vec3{
+        x:0.,
+        y:0. - (100. * x as f32),
+        ..default()
+      };
+
+      commands.spawn(
+      ( 
+        if x == 0 { components::Player::Head } else { components::Player::Body } ,
+        components::HitBox::from_translation(size.x, size.y, &translation),
+        components::Velocity{x: 100., y: 100.},
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::rgb(
+                0.25,
+                0.95, 
+                if x == 0 { 0.9 } else { 0.1} ,
+                ),
+                custom_size: Some(size),
+                ..default()
+            },
+            transform: Transform{
+              translation,
+              ..default()
+            },
+            ..default()
+          }
+        )
+      );
+
+
+      });
+
+
+
+    // println!{"set.p0() {}", set.p0().iter().len() };
+
+    set.p1().single_mut().sections[0].value = format!("Score: 0");
+    score.0 = 0;
+    need_restart.0 = false;
+  }
+}
+
 
 
 // endregion: --- PlayerPlugin systems
